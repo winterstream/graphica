@@ -85,8 +85,6 @@ class DirectedGraph(object):
             self._out_degree[pos_index] = 0
             self._in_degree[pos_index] = 0
             num_nodes -= 1
-        if index != EMPTY:
-            self._in_degree[del_index(index)] = EMPTY
         self._node_first_available = index
         return num_nodes
 
@@ -209,9 +207,7 @@ class DirectedGraph(object):
         self.clear_node(node)
 
         self._out_degree[node] = self._node_first_available
-        self._in_degree[node] = EMPTY
-        if self._node_first_available != EMPTY:
-            self._in_degree[del_index(self._node_first_available)] = del_index(node)
+        self._in_degree[node] =  self._node_first_available
         self._node_first_available = del_index(node)
         self._num_nodes -= 1
 
@@ -239,7 +235,7 @@ class DirectedGraph(object):
         print del_index(self._node_first_available), " -> "
         while index != EMPTY:
             pos_index = del_index(index)
-            print "[", del_index(self._in_degree[pos_index]), " < ", pos_index, " > ", del_index(self._out_degree[pos_index]), "]"
+            print "[", pos_index, " > ", del_index(self._out_degree[pos_index]), "]"
             index = self._out_degree[pos_index]
 
 def get_adjacency():
