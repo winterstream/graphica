@@ -254,7 +254,10 @@ class Graph(object):
                 yield (tgt, i)
 
     def incident(self, node):
-        return chain(self.out_edges(node), self.in_edges(node))
+        if not self.directed:
+            return self.out_edges(node)
+        else:
+            return chain(self.out_edges(node), self.in_edges(node))
 
     def _print_available_nodes(self):
         index = self._node_first_available
