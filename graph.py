@@ -11,8 +11,8 @@ def del_index(x):
     return MASK ^ x
 
 
-class DirectedGraph(object):
-    def __init__(self, directed=True):
+class Graph(object):
+    def __init__(self, directed=False):
         self._directed = directed
         self._num_nodes = 0
         self._num_edges = 0

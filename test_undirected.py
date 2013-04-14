@@ -1,4 +1,4 @@
-from directedgraph import DirectedGraph
+from graph import Graph
 
 def get_adjacency():
     return [[0, 1, 3, 4, 6, 8],
@@ -19,7 +19,7 @@ def get_edges():
 
 
 def get_graph():
-    g = DirectedGraph(False)
+    g = Graph(False)
     g.add_nodes(9)
     g.add_edges(get_edges())
     return g
