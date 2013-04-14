@@ -12,7 +12,8 @@ def del_index(x):
 
 
 class DirectedGraph(object):
-    def __init__(self):
+    def __init__(self, directed=True):
+        self._directed = directed
         self._num_nodes = 0
         self._num_edges = 0
 
@@ -23,10 +24,20 @@ class DirectedGraph(object):
         self._out_nodes = []
         self._out_node_indices = []
 
-        self._in_degree = []
-        self._in_nodes_first_available = []
-        self._in_nodes = []
-        self._in_node_indices = []
+        if directed:
+            self._in_degree = []
+            self._in_nodes_first_available = []
+            self._in_nodes = []
+            self._in_node_indices = []
+        else:
+            self._in_degree = self._out_degree
+            self._in_nodes_first_available = self._out_nodes_first_available
+            self._in_nodes = self._out_nodes
+            self._in_node_indices = self._out_node_indices
+
+    @property
+    def directed(self):
+        return self._directed
 
     @property
     def num_nodes(self):
@@ -54,10 +65,16 @@ class DirectedGraph(object):
             return (deg for deg in self._in_degree if deg >= 0)
 
     def degree(self, node=None):
-        if node is not None:
-            return self._out_degree[node] + self._in_degree[node]
+        if not self.directed:
+            if node is not None:
+                return self._out_degree[node]
+            else:
+                return self.out_degree()
         else:
-            return chain(self.out_degree(), self.in_degree())
+            if node is not None:
+                return self._out_degree[node] + self._in_degree[node]
+            else:
+                return chain(self.out_degree(), self.in_degree())
 
     def out_neighbors(self, node):
         for n in self._out_nodes[node]:
@@ -73,9 +90,10 @@ class DirectedGraph(object):
         for n in self._out_nodes[node]:
             if n >= 0:
                 yield n
-        for n in self._in_nodes[node]:
-            if n >= 0:
-                yield n
+        if self.directed:
+            for n in self._in_nodes[node]:
+                if n >= 0:
+                    yield n
 
     def _fill_empty_nodes(self, num_nodes):
         index = self._node_first_available
@@ -94,10 +112,11 @@ class DirectedGraph(object):
         self._out_nodes_first_available.extend(EMPTY for _i in xrange(num_nodes))
         self._out_degree.extend(0 for _i in xrange(num_nodes))
 
-        self._in_nodes.extend(array('l') for _i in xrange(num_nodes))
-        self._in_node_indices.extend(array('l') for _i in xrange(num_nodes))
-        self._in_nodes_first_available.extend(EMPTY for _i in xrange(num_nodes))
-        self._in_degree.extend(0 for _i in xrange(num_nodes))
+        if self.directed:
+            self._in_nodes.extend(array('l') for _i in xrange(num_nodes))
+            self._in_node_indices.extend(array('l') for _i in xrange(num_nodes))
+            self._in_nodes_first_available.extend(EMPTY for _i in xrange(num_nodes))
+            self._in_degree.extend(0 for _i in xrange(num_nodes))
 
     def add_nodes(self, num_nodes):
         remaining_nodes = self._fill_empty_nodes(num_nodes)
@@ -107,17 +126,8 @@ class DirectedGraph(object):
     def add_edge(self, src, tgt):
         self.add_edges([(src, tgt)])
 
-#    def _undelete_node(self, node):
-#        self._node_next_available[node]
-
     def add_edges(self, src_tgt_pairs):
         for src, tgt in src_tgt_pairs:
-            # in_node_index is the array index in self._in_nodes that this edge
-            # will be occupy
-            in_node_index = (len(self._in_nodes[tgt])
-                             if self._in_nodes_first_available[tgt] == EMPTY
-                             else del_index(self._in_nodes_first_available[tgt]))
-
             # There are no gaps to be filled in the out_nodes array
             if self._out_nodes_first_available[src] == EMPTY:
                 # out_node_index is the array index in self._out_nodes that this
@@ -125,6 +135,14 @@ class DirectedGraph(object):
                 out_node_index = len(self._out_nodes[src])
                 # Append the target to _out_nodes
                 self._out_nodes[src].append(tgt)
+                # in_node_index is the array index in self._in_nodes that this edge
+                # will be occupy
+                # Note that although this line appears in both branches of the
+                # conditional, it must appear after modification to self._out_nodes,
+                # as for undirected graphs, self._out_nodes == self._in_nodes.
+                in_node_index = (len(self._in_nodes[tgt])
+                                 if self._in_nodes_first_available[tgt] == EMPTY
+                                 else del_index(self._in_nodes_first_available[tgt]))
                 # Append the position that our other end-point has in self._in_nodes
                 self._out_node_indices[src].append(in_node_index)
             # There are gaps to be filled in the source list
@@ -134,6 +152,14 @@ class DirectedGraph(object):
                 # Change the first open index to the next available open index
                 self._out_nodes_first_available[src] = self._out_nodes[src][out_node_index]
                 self._out_nodes[src][out_node_index] = tgt
+                # in_node_index is the array index in self._in_nodes that this edge
+                # will be occupy
+                # Note that although this line appears in both branches of the
+                # conditional, it must appear after modification to self._out_nodes,
+                # as for undirected graphs, self._out_nodes == self._in_nodes.
+                in_node_index = (len(self._in_nodes[tgt])
+                                 if self._in_nodes_first_available[tgt] == EMPTY
+                                 else del_index(self._in_nodes_first_available[tgt]))
                 self._out_node_indices[src][out_node_index] = in_node_index
             self._out_degree[src] += 1
 
