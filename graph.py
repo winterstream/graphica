@@ -259,11 +259,14 @@ class Graph(object):
         else:
             return chain(self.out_edges(node), self.in_edges(node))
 
-    def _print_available_nodes(self):
-        index = self._node_first_available
-        print del_index(self._node_first_available), " -> "
-        while index != EMPTY:
-            pos_index = del_index(index)
-            print "[", pos_index, " > ", del_index(self._out_degree[pos_index]), "]"
-            index = self._out_degree[pos_index]
+
+# Debugging code
+
+def _print_available_nodes(graph):
+    index = graph._node_first_available
+    print del_index(graph._node_first_available), " -> "
+    while index != EMPTY:
+        pos_index = del_index(index)
+        print "[", pos_index, " > ", del_index(graph._out_degree[pos_index]), "]"
+        index = graph._out_degree[pos_index]
 
