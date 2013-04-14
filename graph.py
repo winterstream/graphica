@@ -238,20 +238,20 @@ class Graph(object):
         self._num_nodes -= 1
 
     def source(self, edge):
-        return self._in_nodes[edge[0]][edge[1]]
+        return edge[0]
 
     def target(self, edge):
-        return edge[0]
+        return self._out_nodes[edge[0]][edge[1]]
 
     def out_edges(self, src):
         for i, tgt in enumerate(self._out_nodes[src]):
             if tgt >= 0:
-                yield (tgt, self._out_node_indices[src][i])
+                yield (src, i)
 
     def in_edges(self, tgt):
         for i, src in enumerate(self._in_nodes[tgt]):
             if src >= 0:
-                yield (tgt, i)
+                yield (src, self._in_node_indices[tgt][i])
 
     def incident(self, node):
         if not self.directed:
